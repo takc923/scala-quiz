@@ -1,6 +1,8 @@
 package com.chatwork.quiz.collection
 
-import com.chatwork.quiz.MyOption
+import com.chatwork.quiz.{MySome, MyNone, MyOption}
+
+import scala.annotation.tailrec
 
 sealed trait MyList[+A] {
 
@@ -53,10 +55,14 @@ sealed trait MyList[+A] {
 
   // Normal: 条件 - filterと同様の実装でも構いません。
   // Hard:   条件 - 中間リストを生成しないように実装してください。
-  def withFilter(f: A => Boolean): MyList[A] = ???
+  def withFilter(f: A => Boolean): MyList[A] = filter(f)
 
   // Normal
-  def find(f: A => Boolean): MyOption[A] = ???
+  def find(f: A => Boolean): MyOption[A] = this match {
+    case MyCons(x,l) if f(x) => MySome(x)
+    case MyCons(x,l) if !f(x) => l.find(f) // TODO: 末尾再帰にしたい
+    case MyNil => MyNone
+  }
 
   // Normal
   def startsWith[B >: A](prefix: MyList[B]): Boolean = ???
