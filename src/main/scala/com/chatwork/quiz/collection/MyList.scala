@@ -34,13 +34,22 @@ sealed trait MyList[+A] {
   // scalastyle:on
 
   // Normal
-  def map[B](f: A => B): MyList[B] = ???
+  def map[B](f: A => B): MyList[B] = this match {
+    case x: MyCons[A] => x.foldRight(MyList.empty[B])((l, r) => MyCons(f(l), r))
+    case MyNil => MyNil
+  }
 
   // Normal
-  def flatMap[B](f: A => MyList[B]): MyList[B] = ???
+  def flatMap[B](f: A => MyList[B]): MyList[B] = this match {
+    case x: MyCons[A] => x.foldRight(MyList.empty[B])((l, r) => f(l) ++ r)
+    case MyNil => MyNil
+  }
 
   // Normal
-  def filter(f: A => Boolean): MyList[A] = ???
+  def filter(f: A => Boolean): MyList[A] = this match {
+    case x: MyCons[A] => x.foldRight(MyList.empty[A])((l, r) => if (f(l)) MyCons(l, r) else r)
+    case MyNil => MyNil
+  }
 
   // Normal: 条件 - filterと同様の実装でも構いません。
   // Hard:   条件 - 中間リストを生成しないように実装してください。
