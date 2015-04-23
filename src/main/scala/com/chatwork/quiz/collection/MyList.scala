@@ -79,9 +79,14 @@ sealed trait MyList[+A] {
   def startsWith2[B >: A](prefix: MyList[B]): Boolean = if (this.length < prefix.length) false
   else zip(prefix).forall { case (l, r) => l == r}
 
-  def zip[B](other: MyList[B]): MyList[(A, B)] = (this, other) match {
-    case (MyCons(lh, lt), MyCons(rh, rt)) => MyCons((lh, rh), lt.zip(rt))
-    case _ => MyNil
+  def zip[B](other: MyList[B]): MyList[(A, B)] = {
+    def go(self: MyList[A], other: MyList[B], result: MyList[(A, B)]): MyList[(A, B)] =
+      (self, other) match {
+        case (MyCons(lh, lt), MyCons(rh, rt)) => go(lt, rt, MyCons((lh,rh), result))
+        case _ => result
+      }
+
+    go(this.reverse, other.reverse, MyNil)
   }
 
   def forall(f: A => Boolean): Boolean = foldLeft(true)(_ && f(_))
