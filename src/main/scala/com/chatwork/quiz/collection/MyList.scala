@@ -59,13 +59,32 @@ sealed trait MyList[+A] {
 
   // Normal
   def find(f: A => Boolean): MyOption[A] = this match {
-    case MyCons(x,l) if f(x) => MySome(x)
-    case MyCons(x,l) if !f(x) => l.find(f) // TODO: 末尾再帰にしたい
+    case MyCons(x, l) if f(x) => MySome(x)
+    case MyCons(x, l) if !f(x) => l.find(f)
     case MyNil => MyNone
   }
 
   // Normal
-  def startsWith[B >: A](prefix: MyList[B]): Boolean = ???
+  def startsWith[B >: A](prefix: MyList[B]): Boolean = {
+    @tailrec
+    def go(self: MyList[A], prefix: MyList[B], z: Boolean): Boolean = (this, prefix) match {
+      case (MyCons(lh, lt), MyCons(rh, rt)) => go(lt, rt, lh == rh)
+      case (_, MyNil) => true
+      case _ => false
+    }
+
+    go(this, prefix, true)
+  }
+
+  def startsWith2[B >: A](prefix: MyList[B]): Boolean = if (this.length < prefix.length) false
+  else zip(prefix).forall { case (l, r) => l == r}
+
+  def zip[B](other: MyList[B]): MyList[(A, B)] = (this, other) match {
+    case (MyCons(lh, lt), MyCons(rh, rt)) => MyCons((lh, rh), lt.zip(rt))
+    case _ => MyNil
+  }
+
+  def forall(f: A => Boolean): Boolean = foldLeft(true)(_ && f(_))
 
 }
 
